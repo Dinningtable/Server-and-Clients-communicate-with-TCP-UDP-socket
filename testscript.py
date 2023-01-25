@@ -16,24 +16,10 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument('-p', dest='port', type=int, default=8888)
-parser.add_argument('-s',
-                    '--submission',
-                    dest='submission',
-                    type=str,
-                    default='')
 parser.add_argument('-t', '--testcase', dest='testcase', type=str, default='')
 args = parser.parse_args()
 
-if args.submission:
-    assert args.submission.endswith('.zip'), 'Please run with a zip file'
-    filename = args.submission.split('.')[0]
-    subprocess.run(['unzip', '-o', args.submission, '-d', filename])
-    subprocess.run(['bash', 'build.sh'], cwd=filename)
-
-    BUILD_DIR = f'{filename}/build'
-else:
-    BUILD_DIR = 'build'
-
+BUILD_DIR = 'build'
 SERVER_YOUR = f'{BUILD_DIR}/server'
 CLIENT_YOUR = f'{BUILD_DIR}/client'
 SERVER_PORT = args.port
@@ -43,6 +29,7 @@ RESPONSE = "response"
 TESTCASES_CORRECT = 'testcases_correct'
 TESTCASES_DIFF = "testcases_diff"
 
+os.makedirs(BUILD_DIR, exist_ok=True)
 os.makedirs(RESPONSE, exist_ok=True)
 os.makedirs(TESTCASES_DIFF, exist_ok=True)
 testcases_src = [args.testcase] if args.testcase else os.listdir(TESTCASES_SRC)
