@@ -5,6 +5,11 @@ import difflib
 from concurrent.futures import ThreadPoolExecutor
 import argparse
 import concurrent.futures
+import socket
+import pathlib
+from time import sleep
+
+SLEEP_FOR_SOCKET_READY = 0.025
 
 parser = argparse.ArgumentParser(
     'Sample demo script\n   To ensure your zip format is correct, please make sure to run this script before submission\n'
@@ -30,14 +35,15 @@ else:
     BUILD_DIR = 'build'
 
 SERVER_YOUR = f'{BUILD_DIR}/server'
+CLIENT_YOUR = f'{BUILD_DIR}/client'
 SERVER_PORT = args.port
 
 TESTCASES_SRC = "testcases"
-TESTCASES_YOUR = os.path.join(BUILD_DIR, 'testcases_your')
+RESPONSE = "response"
 TESTCASES_CORRECT = 'testcases_correct'
-TESTCASES_DIFF = os.path.join(BUILD_DIR, 'testcases_diff')
+TESTCASES_DIFF = "testcases_diff"
 
-os.makedirs(TESTCASES_YOUR, exist_ok=True)
+os.makedirs(RESPONSE, exist_ok=True)
 os.makedirs(TESTCASES_DIFF, exist_ok=True)
 testcases_src = [args.testcase] if args.testcase else os.listdir(TESTCASES_SRC)
 
@@ -45,12 +51,13 @@ testcases_src = [args.testcase] if args.testcase else os.listdir(TESTCASES_SRC)
 def run_testcase(filename):
     print(f'Running {filename}')
     try:
-        proc = Popen(SERVER_YOUR)
+        proc = Popen([SERVER_YOUR, f'{SERVER_PORT}'])
     except FileNotFoundError as e:
         print(
             f'{e}\n   Please make sure your server is in {BUILD_DIR}, U might forget to run build.sh'
         )
         exit(1)
+    sleep(SLEEP_FOR_SOCKET_READY)
 
     # To ensure server has started listening
     while True:
@@ -60,10 +67,9 @@ def run_testcase(filename):
         if p.stdout:
             break
 
-    subprocess.run([
-        'python3', 'client.py', '--filename', f'{filename}', '--dst',
-        f'{TESTCASES_YOUR}'
-    ])
+    with open(os.path.join(TESTCASES_SRC ,filename), 'r') as input_f:
+        with open(os.path.join(RESPONSE ,filename), 'w+') as out_f:
+            subprocess.run([CLIENT_YOUR, "127.0.0.1", f'{SERVER_PORT}'], stdout= out_f, stdin=input_f)
     proc.terminate()
 
 
@@ -75,7 +81,7 @@ def diff_file(filename):
     with open(src_file, 'r') as f:
         ta_answer = f.readlines()
 
-    dst_file = os.path.join(TESTCASES_YOUR, filename)
+    dst_file = os.path.join(RESPONSE, filename)
     with open(dst_file, 'r') as f:
         your_answer = f.readlines()
 

@@ -1,11 +1,13 @@
-(0) Register Successfully
-(1) Register Successfully
-(2) Register Successfully
-(0) Username does not exist
-(0) Welcome, Alice
-(0) Username does not exist
-(0) You already logged in as Alice
-(1) Someone already logged in as Alice
-(1) Welcome, Bob
-(2) Wrong password
-(2) Welcome, David
+*****Welcome to Game 1A2B*****
+:~$Register successfully.
+:~$Register successfully.
+:~$Register successfully.
+:~$Username not found.
+:~$Welcome, Alice.
+Alice:~$Please logout first.
+Alice:~$Please logout first.
+Alice:~$Please logout first.
+Alice:~$Please logout first.
+Alice:~$Please logout first.
+Alice:~$Please logout first.
+Alice:~$

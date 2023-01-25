@@ -1,12 +1,11 @@
-3
-0 udp register Alice alice@gmail.com 1
-1 udp register Bob bob@gmail.com 2
-2 udp register David david@gmail.com 0000
-0 tcp login Charlie 3
-0 tcp login Alice 1
-0 tcp login Charlie 3
-0 tcp login Bob 2
-1 tcp login Alice 1
-1 tcp login Bob 2
-2 tcp login David 3
-2 tcp login David 0000
+register Alice alice@gmail.com 1
+register Bob bob@gmail.com 2
+register David david@gmail.com 0000
+login Charlie 3
+login Alice 1
+login Charlie 3
+login Bob 2
+login Alice 1
+login Bob 2
+login David 3
+login David 0000

@@ -1,2 +1,3 @@
 #!/bin/bash
-gcc server.c -o ./build/server.exe -pthread
+gcc Server.c -o ./build/server -pthread
+gcc Client.c -o ./build/client -pthread

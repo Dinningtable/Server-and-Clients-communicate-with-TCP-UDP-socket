@@ -25,6 +25,7 @@
 #define C_GUESS 5
 #define C_EXIT 6
 #define C_INVALID 7
+#define C_HELP 8
 
 #define R_REGISTER_SUCCESS 0
 #define R_REGISTER_ERR_USR 1
@@ -53,6 +54,9 @@
 #define R_GUESS_INVALID 1
 #define R_GUESS_WIN 2
 #define R_GUESS_LOSE 3
+
+#define R_HELP_SUCCESS 0
+#define R_HELP_ERR_USAGE 1
 
 #define R_EXIT_SUCCESS 0
 #define R_EXIT_ERR_USAGE 1
@@ -94,6 +98,18 @@ const char *M_GUESS_VALID = "XAXB\n"; // xAxB
 const char *M_GUESS_INVALID = "Your guess should be a 4-digit number.\n";
 const char *M_GUESS_WIN = "You got the answer!\n";
 const char *M_GUESS_LOSE = "You lose the game!\n";
+
+const char *M_HELP_SUCCESS =
+    "Usage: \n"
+    "register <username> <email> <password>\n"
+    "login <username> <password>\n"
+    "logout\n"
+    "game-rule\n"
+    "start-game\n"
+    "exit\n"
+    "help\n";
+
+const char *M_HELP_ERR_USAGE = "Usage: help\n";
 
 const char *M_EXIT_SUCCESS = "\0";
 const char *M_EXIT_ERR_USAGE = "Usage: exit\n";
@@ -160,24 +176,11 @@ int min(int a, int b) {
 // This function returns 10*A + B
 int getAB(char *ans, char *guess) {
   int A = 0, B = 0;
-  // int ansOccur[10] = {0};
-  // int guessOccur[10] = {0};
-  // int minOccur[10] = {0};
   int numUsed[10] = {0};
-  int posCounted[4] = {
-      0}; // If posCounted = 1: A if posCounted = 2: this pos in B is counted
-
-  /*for(int it=0; it<4; it++){
-      ansOccur[ans[it]-48]++;
-      guessOccur[guess[it]-48]++;
-  }
-  for(int it=0; it<10; it++){
-      minOccur[it] = min(ansOccur[it], guessOccur[it]);
-  }*/
+  int posCounted[4] = {0}; // If posCounted = 1: A if posCounted = 2: this pos in B is counted
 
   for (int it = 0; it < 4; it++) {
     if (ans[it] == guess[it]) {
-      // numUsed[ans[it]]++;
       posCounted[it] = 1;
       printf("A pos: %d\n", it);
       A++;
@@ -199,17 +202,6 @@ int getAB(char *ans, char *guess) {
     }
   }
 
-  /*for(int it=0; it<4; it++){
-      char tgt = ans[it];
-      for(int it2 =0; it2<4; it2++){
-          if(it==it2 && ans[it]==guess[it2] && numUsed[ans[it]] <
-  minOccur[ans[it]]){ A++; numUsed[ans[it]]++; break; }else if(it!=it2 &&
-  ans[it]==guess[it2] && numUsed[ans[it]] < minOccur[ans[it]]){ B++;
-              numUsed[ans[it]]++;
-              break;
-          }
-      }
-  }*/
   return 10 * A + B;
 }
 
@@ -381,7 +373,7 @@ void handleCommand(char *msg, int nParams, char params[][MAXLINE],
       }
     }
 
-  } else if (!strcmp(params[0], "register")) {
+  } else if (strcmp(params[0], "register")==0) {
 
     comType = C_REGISTER;
     printf("Entered register command handling...\n");
@@ -408,7 +400,7 @@ void handleCommand(char *msg, int nParams, char params[][MAXLINE],
       }
     }
 
-  } else if (!strcmp(params[0], "login")) {
+  } else if (strcmp(params[0], "login")==0) {
 
     comType = C_LOGIN;
 
@@ -440,7 +432,7 @@ void handleCommand(char *msg, int nParams, char params[][MAXLINE],
       }
     }
 
-  } else if (!strcmp(params[0], "logout")) {
+  } else if (strcmp(params[0], "logout")==0) {
 
     comType = C_LOGOUT;
 
@@ -459,7 +451,7 @@ void handleCommand(char *msg, int nParams, char params[][MAXLINE],
       bzero(userName, sizeof(userName));
     }
 
-  } else if (!strcmp(params[0], "game-rule")) {
+  } else if (strcmp(params[0], "game-rule")==0) {
 
     comType = C_GAMERULE;
 
@@ -471,7 +463,7 @@ void handleCommand(char *msg, int nParams, char params[][MAXLINE],
       strcpy(msg, M_GAMERULE_SUCCESS);
     }
 
-  } else if (!strcmp(params[0], "start-game")) {
+  } else if (strcmp(params[0], "start-game")==0) {
 
     comType = C_STARTGAME;
     if (*loggedInPtr == 0) {
@@ -522,7 +514,7 @@ void handleCommand(char *msg, int nParams, char params[][MAXLINE],
       strcpy(msg, M_STARTGAME_ERR_USAGE);
     }
 
-  } else if (!strcmp(params[0], "exit")) {
+  } else if (strcmp(params[0], "exit")==0) {
     if (nParams != 1) {
       resultCode = R_EXIT_ERR_USAGE;
       strcpy(msg, M_EXIT_ERR_USAGE);
@@ -531,11 +523,24 @@ void handleCommand(char *msg, int nParams, char params[][MAXLINE],
       strcpy(msg, M_EXIT_SUCCESS);
     }
 
+  } else if (strcmp(params[0], "help")==0) {
+
+    comType = C_HELP;
+
+    if (nParams != 1) {
+      resultCode = R_HELP_ERR_USAGE;
+      strcpy(msg, M_HELP_ERR_USAGE);
+    } else {
+      resultCode = R_HELP_SUCCESS;
+      strcpy(msg, M_HELP_SUCCESS);
+    }
+
   } else {
     comType = C_INVALID;
     resultCode = R_INVALID_COMMAND;
     strcpy(msg, M_INVALID_COMMAND);
   }
+
   strcat(msg, "\0");
 }
 
@@ -551,16 +556,11 @@ void *routine(void *param) {
   struct routineParams *paramPtr = param;
 
   strcpy(msg, "*****Welcome to Game 1A2B*****\n");
-  write(paramPtr->clientSocketFd, msg, strlen(msg) + 1);
+  write(paramPtr->clientSocketFd, msg, strlen(msg));
 
   // TCP server
   // TCP echo
   while (1) {
-
-    // for(int it = 0; it<5; it++){
-    //    bzero(params[it], sizeof(params[it]));
-    //}
-
     bzero(msg, sizeof(msg));
     read(paramPtr->clientSocketFd, msg, sizeof(msg));
 
@@ -572,15 +572,15 @@ void *routine(void *param) {
     }
 
     nParams = splitParams(msg, params);
-    printf("number of params: %d\n", nParams);
+    /*printf("number of params: %d\n", nParams);
     for (int it = 0; it < nParams; it++) {
       printf("%s\n", params[it]);
-    }
+    }*/
     bzero(msg, sizeof(msg));
     handleCommand(msg, nParams, params, &loggedIn, &inGame, ans, userName);
-    printf("Message after funcion ret: %s", msg);
+    //printf("Message after funcion ret: %s", msg);
     write(paramPtr->clientSocketFd, msg, sizeof(msg));
-    printf("Sent: \"%s\"\n", msg);
+    printf("Sent: %s\n", msg);
   }
 
   close(paramPtr->clientSocketFd);
@@ -597,7 +597,7 @@ void *udpProcessAndSendRoutine(void *param) {
   int iDummy = 0;
   char cDummy[MAXLINE] = "asfdiuf";
 
-  printf("message handling thread entered...\n");
+  //printf("message handling thread entered...\n");
   strcpy(msg, paramPtr->msg);
   nParams = splitParams(msg, params);
   bzero(msg, sizeof(msg));
@@ -622,7 +622,7 @@ void *udpRoutine(void *param) {
 
   serverAddress = paramPtr->serverAddress;
 
-  printf("Udp top routine entered...\n");
+  //printf("Udp routine entered...\n");
 
   // UDP socket creation
   uServerSocketFd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -630,7 +630,7 @@ void *udpRoutine(void *param) {
     printf("Failed to create UDP socket\n");
     exit(1);
   } else {
-    printf("socket : %d\n", uServerSocketFd);
+    //printf("UDP socket : %d\n", uServerSocketFd);
   }
   setsockopt(uServerSocketFd, SOL_SOCKET, SO_REUSEADDR, (void *)&reuseOption,
              sizeof(reuseOption));
@@ -641,7 +641,7 @@ void *udpRoutine(void *param) {
     printf("Failed to bind\n");
     exit(1);
   } else {
-    printf("bound\n");
+    printf("UDP socket bound\n");
   }
   while (1) {
     rMsgLength =
@@ -696,12 +696,8 @@ int main(int argc, char *argv[]) {
   serverAddress.sin_port = htons(atoi(argv[1]));
 
   // Open user file
-  if (fopen("userFile.txt", "rw+") == NULL) {
-    // Do task when file does not exists
-    userFilePtr = fopen("userFile.txt", "w+");
-  }
-  // Do task when file does exists
-  userFilePtr = fopen("userFile.txt", "rw+");
+  userFilePtr = fopen("userfile.txt", "w+");
+
 
   // Thread recycling thread
   pthread_create(&recyclingThread, NULL, &recycleThreads, NULL);
@@ -717,7 +713,7 @@ int main(int argc, char *argv[]) {
     printf("Failed to create socket\n");
     exit(1);
   } else {
-    printf("socket : %d\n", serverSocketFd);
+    //printf("TCP socket : %d\n", serverSocketFd);
   }
   setsockopt(serverSocketFd, SOL_SOCKET, SO_REUSEADDR, (void *)&reuseOption,
              sizeof(reuseOption));
@@ -728,7 +724,7 @@ int main(int argc, char *argv[]) {
     printf("Failed to bind\n");
     exit(1);
   } else {
-    printf("bound\n");
+    printf("TCP socket bound\n");
   }
 
   // TCP listening
@@ -748,7 +744,7 @@ int main(int argc, char *argv[]) {
       printf("Failed to accept client\n");
       continue;
     } else {
-      printf("Accepted\n");
+      printf("Accepted a new client\n");
       // pthread_create
       // Find an available thread
       for (int i = 0; i < 100; i++) {
@@ -765,6 +761,8 @@ int main(int argc, char *argv[]) {
   }
 
   // close
+  fclose(userFilePtr);
+  printf("userfile closed\n");
   close(clientSocketFd);
   printf("Client socket closed\n");
   close(serverSocketFd);
