@@ -36,8 +36,8 @@ arguments
 if you run client successfully, *****Welcome to Game 1A2B***** pop out.
 You can play 1A2B game as client.
 There are instructions:
-* register <username> <email> <password>
-* login <username> <password>
+* register username email password
+* login username password
 * logout
 * game-rule
 * start-game
