@@ -9,7 +9,7 @@ Build the executable file
 bash build.sh
 ```
 
-Run Server
+Furst, run Server
 
 ```
 ./build/server <port>
@@ -33,3 +33,13 @@ arguments
 -t : testcase path
 ```
 
+if you run client successfully, *****Welcome to Game 1A2B***** pop out.
+You can play 1A2B game as client.
+There are instructions:
+* register <username> <email> <password>
+* login <username> <password>
+* logout
+* game-rule
+* start-game
+* exit
+* help
